@@ -1,0 +1,280 @@
+openapi: '3.0.2'
+info:
+  title: API Title
+  version: '1.0'
+servers:
+  - url: https://api.server.test/v1
+paths:
+  /users/{userId}:
+    get:
+      summary: Get user information
+      description: >-
+           This method is responsible for retrieving user data.
+             * If the user is not found, an error should be returned.
+             * If the user is deleted, an error should be returned.
+      tags: 
+        - User
+        - Get
+      security:
+        - oauth2:
+            - read
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User identifier
+          schema:
+            type: integer
+        - name: X-Custom-Header
+          in: header
+          description: Custom header
+          required: false
+          allowEmptyValue: true
+          schema:
+            type: string
+        - name: session_id
+          in: cookie
+          description: Session identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful request
+          content:
+            application/json:
+              example:
+                userId: 123
+                username: john_doe
+                email: john@example.com
+        '401':
+            $ref: "#/components/responses/Unauthorized"
+    post:
+      summary: Create a new user
+      tags: 
+        - User
+      security:
+        - oauth2:
+            - write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User identifier
+          schema:
+            type: integer
+      requestBody:
+        description: Data for the new user
+        required: true
+        content:
+          application/json:
+            example:
+              username: new_user
+              email: new_user@example.com
+      responses:
+        '201':
+          description: Successful creation
+          content:
+            application/json:
+              example:
+                userId: 124
+                username: new_user
+                email: new_user@example.com
+    put:
+      summary: Update user information
+      security:
+        - oauth2:
+            - write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User identifier
+          schema:
+            type: integer
+      requestBody:
+        description: New user data
+        required: true
+        content:
+          application/json:
+            example:
+              username: updated_user
+              email: updated_user@example.com
+      responses:
+        '200':
+          description: Successful update
+          content:
+            application/json:
+              example:
+                userId: 123
+                username: updated_user
+                email: updated_user@example.com
+    delete:
+      summary: Delete user
+      security:
+        - oauth2:
+            - write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User identifier
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Successful deletion
+    patch:
+      summary: Partially update user information
+      security:
+        - oauth2:
+            - write
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User identifier
+          schema:
+            type: integer
+      requestBody:
+        description: Partial user data for update
+        required: true
+        content:
+          application/json:
+            example:
+              email: updated_email@example.com
+      responses:
+        '200':
+          description: Successful partial update
+          content:
+            application/json:
+              example:
+                userId: 123
+                username: updated_user
+                email: updated_email@example.com
+components:
+  schemas:
+    ValueExample:
+      type: object
+      properties: 
+        # string example
+        StringProperty: 
+          type: string
+          title: "String Example"
+          description: "This is an example of a string property"
+          format: "date"
+          minLength: 3
+          maxLength: 10
+          pattern: "^[a-zA-Z]+$"
+          default: "default_value"
+          example: "example_value"
+          nullable: true
+          readOnly: false
+          writeOnly: false
+          enum:
+            - "value1"
+            - "value2"
+       # number example
+        NumberProperty:
+          type: number
+          title: "Number Example"
+          description: "This is an example of a number property"
+          format: "int32"
+          minimum: 0
+          maximum: 100
+          exclusiveMinimum: false
+          exclusiveMaximum: true
+          default: 42
+          example: 27.5
+          nullable: true
+          readOnly: false
+          writeOnly: false
+          enum:
+            - 1
+            - 2
+        # integer
+        IntegerProperty:
+          type: integer
+          title: "Integer Example"
+          description: "This is an example of an integer property"
+          format: "int32"
+          minimum: -10
+          maximum: 10
+          default: 0
+          example: 7
+          nullable: true
+          readOnly: false
+          writeOnly: false
+          enum:
+            - 1
+            - 7
+        # bool
+        BooleanProperty:
+          type: boolean
+          title: "Boolean Example"
+          description: "This is an example of a boolean property"
+          default: true
+          example: false
+          nullable: true
+          readOnly: false
+          writeOnly: false
+    UsersList:
+      type: array
+      title: "List of Users"
+      description: "Array of user objects"
+      items:
+        type: object
+        properties:
+          user_id:
+            type: string
+            minLength: 1
+            example: "user1"
+          username:
+            type: string
+            example: "User One"
+        required:
+          - user_id
+          - username
+    AllOfExampleGet:
+      type: object
+      properties:
+        name: 
+          type: string
+        age: 
+          type: integer
+    AllOfExamplePost:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/AllOfExampleGet"
+      properties:
+        address:
+          type: integer
+      required:
+        - name
+  responses:
+      Unauthorized:
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              properties:
+                Error:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                    message:
+                      type: string
+                  required:
+                    - code
+                    - message
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            read: Read access to data
+            write: Write access to data
